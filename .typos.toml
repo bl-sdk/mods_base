@@ -1,0 +1,15 @@
+[files]
+extend-exclude = [
+    "LICENSE",
+    ".typos.toml"
+]
+
+[default]
+extend-ignore-re = [
+    # Ignore markdown links to github commits/trees
+    "\\[[0-9a-fA-F]+?\\]\\(https://github.com/.+?/.+?/(commit|tree)/.+?\\)",
+]
+
+
+[default.extend-words]
+UE = "UE"
