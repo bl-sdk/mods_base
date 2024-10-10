@@ -16,3 +16,20 @@ game specific things:
 
 - An initialization script. This should import this and the keybind implementation, then find and
   import all mods, and finally call `mods_base.mod_list.register_base_mod `
+
+# Changelog
+
+### v1.5
+- Added a default `rlm` command, which is a helper to reload Python modules during development.
+- Deprecated the `auto_enable` arg in the `@hook` decorator, since it was misleading and in 99% of
+  cases was not needed.
+- Reworked `@hook` decorator internals to better support use on methods. It essentially creates a
+  factory, which must be bound to the specific object before use. This is done automatically on mod
+  instances.
+- `KeybindOption.from_keybind()` now forwards the `default_key` -> `default_value`, so that
+  resetting to default works consistently.
+  
+### Older
+Versions 1.0 through 1.4 were developed as part of the
+[oak-mod-manager](https://github.com/bl-sdk/oak-mod-manager/blob/master/changelog.md#v14), see it
+for a full changelog.
