@@ -99,13 +99,13 @@ MOD_RELEASE_DOWNLOAD_URL: str
 match Game.get_tree():
     case Game.Willow2:
         MOD_DB_URL = (  # pyright: ignore[reportConstantRedefinition]
-            "https://bl-sdk.github.io/"
+            "https://bl-sdk.github.io/willow2-mod-db/"
         )
         MOD_RELEASE_API_URL = (  # pyright: ignore[reportConstantRedefinition]
-            "https://api.github.com/repos/bl-sdk/willow-mod-manager/releases/latest"
+            "https://api.github.com/repos/bl-sdk/willow2-mod-manager/releases/latest"
         )
         MOD_RELEASE_DOWNLOAD_URL = (  # pyright: ignore[reportConstantRedefinition]
-            "https://github.com/bl-sdk/willow-mod-manager/releases/"
+            "https://github.com/bl-sdk/willow2-mod-manager/releases/"
         )
     case Game.Oak:
         MOD_DB_URL = (  # pyright: ignore[reportConstantRedefinition]
@@ -118,7 +118,7 @@ match Game.get_tree():
             "https://github.com/bl-sdk/oak-mod-manager/releases/"
         )
 
-_MANAGER_VERSION = os.environ.get("MOD_MANAGER_DISPLAY_VERSION", "Unknown Version")
+MANAGER_VERSION = os.environ.get("MOD_MANAGER_DISPLAY_VERSION", "Unknown Version")
 RE_MANAGER_VERSION = re.compile(r"v?(\d+)\.(\d+)")
 
 
@@ -126,7 +126,7 @@ RE_MANAGER_VERSION = re.compile(r"v?(\d+)\.(\d+)")
 class BaseMod(Library):
     name: str = "Python SDK"
     author: str = "bl-sdk"
-    version: str = _MANAGER_VERSION
+    version: str = MANAGER_VERSION
     coop_support: CoopSupport = CoopSupport.ClientSide
     settings_file: Path | None = SETTINGS_DIR / "python-sdk.json"
 
@@ -223,7 +223,7 @@ class BaseMod(Library):
         """
         if self.version == "Unknown Version":
             return None
-        version_match = RE_MANAGER_VERSION.match(_MANAGER_VERSION)
+        version_match = RE_MANAGER_VERSION.match(MANAGER_VERSION)
         if version_match is None:
             return None
         return tuple(int(x) for x in version_match.groups())
