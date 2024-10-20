@@ -19,6 +19,11 @@ game specific things:
 
 # Changelog
 
+### Upcoming
+- Changed default type of `HookType` generic type hint to any, so that by default pre and post hooks
+  can be combined under the same type. As an example, previously if you passed an explicit hook list
+  to `build_mod`, the type hinting would only accept a list where all hooks were of the same type.
+
 ### v1.5
 - Added a default `rlm` command, which is a helper to reload Python modules during development.
 - Deprecated the `auto_enable` arg in the `@hook` decorator, since it was misleading and in 99% of
