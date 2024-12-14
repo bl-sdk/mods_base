@@ -31,6 +31,8 @@ game specific things:
 - Changed the display version to be sourced from `mod_manager.display_version` in the unrealsdk
   config file, rather than an environment variable.
 
+- Gave `@command` and `ArgParseCommand.add_argument` default type hinting for the args they forward.
+
 ### v1.5
 - Added a default `rlm` command, which is a helper to reload Python modules during development.
 - Deprecated the `auto_enable` arg in the `@hook` decorator, since it was misleading and in 99% of
