@@ -19,7 +19,7 @@ game specific things:
 
 # Changelog
 
-### Upcoming
+### v1.6
 - Changed default type of `HookType` generic type hint to any, so that by default pre and post hooks
   can be combined under the same type. As an example, previously if you passed an explicit hook list
   to `build_mod`, the type hinting would only accept a list where all hooks were of the same type.
