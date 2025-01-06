@@ -19,7 +19,10 @@ game specific things:
 
 # Changelog
 
-### v1.7 (Upcoming)
+### v1.7
+- The "Update Available" notification should now immediately go away upon updating, instead of
+  waiting a day for the next check.
+
 - Changed the functions the keybind implementation should overwrite from `KeybindType.enable` to
   `KeybindType._enable` (+ same for disable). These functions don't need to set `is_enabled`.
 
