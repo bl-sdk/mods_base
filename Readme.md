@@ -19,6 +19,9 @@ game specific things:
 
 # Changelog
 
+### v1.8
+- Fixed that nested and grouped options' children would not get their `.mod` attribute set.
+
 ### v1.7
 - The "Update Available" notification should now immediately go away upon updating, instead of
   waiting a day for the next check.
