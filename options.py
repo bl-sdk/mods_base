@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import KW_ONLY, dataclass, field
+from types import EllipsisType
 from typing import TYPE_CHECKING, Any, Literal, Self, cast
 
 from unrealsdk import logging
@@ -46,11 +47,24 @@ class BaseOption(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def _to_json(self) -> JSON:
+    def _to_json(self) -> JSON | EllipsisType:
+        """
+        Turns this option into a JSON value.
+
+        Returns:
+            This option's JSON representation, or Ellipsis if it should be considered to have no
+            value.
+        """
         raise NotImplementedError
 
     @abstractmethod
     def _from_json(self, value: JSON) -> None:
+        """
+        Assigns this option's value, based on a previously retrieved JSON value.
+
+        Args:
+            value: The JSON value to assign.
+        """
         raise NotImplementedError
 
     def __post_init__(self) -> None:
@@ -89,8 +103,14 @@ class ValueOption[J: JSON](BaseOption):
     def __init__(self) -> None:
         raise NotImplementedError
 
-    def _to_json(self) -> JSON:
-        return cast(JSON, self.value)
+    def _to_json(self) -> J:
+        """
+        Turns this option into a JSON value.
+
+        Returns:
+            This option's JSON representation.
+        """
+        return self.value
 
     def __post_init__(self) -> None:
         super().__post_init__()
@@ -202,7 +222,7 @@ class SliderOption(ValueOption[float]):
 
     def _from_json(self, value: JSON) -> None:
         try:
-            self.value = float(value) # type: ignore
+            self.value = float(value)  # type: ignore
             if self.is_integer:
                 self.value = round(self.value)
         except ValueError:
@@ -249,6 +269,7 @@ class SpinnerOption(ValueOption[str]):
                 f" with the default",
             )
 
+
 @dataclass
 class BoolOption(ValueOption[bool]):
     """
@@ -280,6 +301,7 @@ class BoolOption(ValueOption[bool]):
             value = False
 
         self.value = bool(value)
+
 
 @dataclass
 class DropdownOption(ValueOption[str]):
@@ -341,11 +363,17 @@ class ButtonOption(BaseOption):
     _: KW_ONLY
     on_press: Callable[[Self], None] | None = None
 
-    def _to_json(self) -> JSON:
-        raise NotImplementedError("_to_json should never be called on a ButtonOption")
+    def _to_json(self) -> EllipsisType:
+        """
+        A dummy method to adhere to BaseOption interface, while indicating no JSON representation.
+
+        Returns:
+            Ellipsis, indicating that ButtonOption cannot be represented as a value.
+        """
+        return ...
 
     def _from_json(self, value: JSON) -> None:
-        raise NotImplementedError("_from_json should never be called on a ButtonOption")
+        pass
 
     def __call__(self, on_press: Callable[[Self], None]) -> Self:
         """
@@ -453,9 +481,9 @@ class GroupedOption(BaseOption):
     def _to_json(self) -> JSON:
         grouped_option_dict: Mapping[str, JSON] = {}
         for option in self.children:
-            if isinstance(option, ButtonOption):
+            if option._to_json() == ...:
                 continue
-            grouped_option_dict[option.identifier] = option._to_json()
+            grouped_option_dict[option.identifier] = cast(JSON, option._to_json())
         return grouped_option_dict
 
     def _from_json(self, value: JSON) -> None:
@@ -469,6 +497,7 @@ class GroupedOption(BaseOption):
                 f"'{value}' is not a valid value for option '{self.identifier}', sticking"
                 f" with the default",
             )
+
 
 @dataclass
 class NestedOption(BaseOption):
@@ -496,9 +525,9 @@ class NestedOption(BaseOption):
     def _to_json(self) -> JSON:
         grouped_option_dict: Mapping[str, JSON] = {}
         for option in self.children:
-            if isinstance(option, ButtonOption):
+            if option._to_json() == ...:
                 continue
-            grouped_option_dict[option.identifier] = option._to_json()
+            grouped_option_dict[option.identifier] = cast(JSON, option._to_json())
         return grouped_option_dict
 
     def _from_json(self, value: JSON) -> None:

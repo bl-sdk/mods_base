@@ -2,16 +2,13 @@ from __future__ import annotations
 
 import json
 from collections.abc import Mapping, Sequence
-from typing import TYPE_CHECKING, TypedDict
+from typing import TYPE_CHECKING, TypedDict, cast
 
 from . import MODS_DIR
-from .options import (
-    BaseOption,
-    ButtonOption,
-)
 
 if TYPE_CHECKING:
     from .mod import Mod
+    from .options import BaseOption
 
 type JSON = Mapping[str, JSON] | Sequence[JSON] | str | int | float | bool | None
 
@@ -42,7 +39,7 @@ def load_options_dict(
 
         value = settings[option.identifier]
 
-        option._from_json(value) # type: ignore
+        option._from_json(value)  # type: ignore
 
 
 def default_load_mod_settings(self: Mod) -> None:
@@ -84,14 +81,12 @@ def create_options_dict(options: Sequence[BaseOption]) -> dict[str, JSON]:
     Returns:
         The options' values in dict form.
     """
-    settings: dict[str, JSON] = {}
-    for option in options:
-        # Button option is the only standard option which is not abstract, but also not a value,
-        # and doesn't have children.
-        # Just no-op it so that it doesn't show an error
-        if isinstance(option, ButtonOption):
-            continue
-        settings[option.identifier] = option._to_json()  # type: ignore
+    settings: dict[str, JSON] = {
+        option.identifier: cast(JSON, option._to_json())  # type: ignore
+        for option in options
+        if option._to_json() != ...  # type: ignore
+    }
+
     return settings
 
 
