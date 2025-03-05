@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Mapping, Sequence
-from typing import TYPE_CHECKING, TypedDict, cast
+from typing import TYPE_CHECKING, TypedDict
 
 from . import MODS_DIR
 
@@ -81,13 +81,11 @@ def create_options_dict(options: Sequence[BaseOption]) -> dict[str, JSON]:
     Returns:
         The options' values in dict form.
     """
-    settings: dict[str, JSON] = {
-        option.identifier: cast(JSON, option._to_json())  # type: ignore
+    return {
+        option.identifier: child_json
         for option in options
-        if option._to_json() != ...  # type: ignore
+        if (child_json := option._to_json()) is not ...  # pyright: ignore[reportPrivateUsage]
     }
-
-    return settings
 
 
 def default_save_mod_settings(self: Mod) -> None:

@@ -104,12 +104,6 @@ class ValueOption[J: JSON](BaseOption):
         raise NotImplementedError
 
     def _to_json(self) -> J:
-        """
-        Turns this option into a JSON value.
-
-        Returns:
-            This option's JSON representation.
-        """
         return self.value
 
     def __post_init__(self) -> None:
@@ -364,12 +358,6 @@ class ButtonOption(BaseOption):
     on_press: Callable[[Self], None] | None = None
 
     def _to_json(self) -> EllipsisType:
-        """
-        A dummy method to adhere to BaseOption interface, while indicating no JSON representation.
-
-        Returns:
-            Ellipsis, indicating that ButtonOption cannot be represented as a value.
-        """
         return ...
 
     def _from_json(self, value: JSON) -> None:
@@ -479,12 +467,11 @@ class GroupedOption(BaseOption):
     children: Sequence[BaseOption]
 
     def _to_json(self) -> JSON:
-        grouped_option_dict: Mapping[str, JSON] = {}
-        for option in self.children:
-            if option._to_json() == ...:
-                continue
-            grouped_option_dict[option.identifier] = cast(JSON, option._to_json())
-        return grouped_option_dict
+        return {
+            option.identifier: child_json
+            for option in self.children
+            if (child_json := option._to_json()) is not ...
+        }
 
     def _from_json(self, value: JSON) -> None:
         if isinstance(value, Mapping):
@@ -523,12 +510,11 @@ class NestedOption(BaseOption):
     children: Sequence[BaseOption]
 
     def _to_json(self) -> JSON:
-        grouped_option_dict: Mapping[str, JSON] = {}
-        for option in self.children:
-            if option._to_json() == ...:
-                continue
-            grouped_option_dict[option.identifier] = cast(JSON, option._to_json())
-        return grouped_option_dict
+        return {
+            option.identifier: child_json
+            for option in self.children
+            if (child_json := option._to_json()) is not ...
+        }
 
     def _from_json(self, value: JSON) -> None:
         if isinstance(value, Mapping):
