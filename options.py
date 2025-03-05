@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import KW_ONLY, dataclass, field
-from typing import TYPE_CHECKING, Any, Literal, Self
+from types import EllipsisType
+from typing import TYPE_CHECKING, Any, Literal, Self, cast
 
 from unrealsdk import logging
 
@@ -45,6 +46,27 @@ class BaseOption(ABC):
     def __init__(self) -> None:
         raise NotImplementedError
 
+    @abstractmethod
+    def _to_json(self) -> JSON | EllipsisType:
+        """
+        Turns this option into a JSON value.
+
+        Returns:
+            This option's JSON representation, or Ellipsis if it should be considered to have no
+            value.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def _from_json(self, value: JSON) -> None:
+        """
+        Assigns this option's value, based on a previously retrieved JSON value.
+
+        Args:
+            value: The JSON value to assign.
+        """
+        raise NotImplementedError
+
     def __post_init__(self) -> None:
         if self.display_name is None:  # type: ignore
             self.display_name = self.identifier
@@ -80,6 +102,9 @@ class ValueOption[J: JSON](BaseOption):
     @abstractmethod
     def __init__(self) -> None:
         raise NotImplementedError
+
+    def _to_json(self) -> J:
+        return self.value
 
     def __post_init__(self) -> None:
         super().__post_init__()
@@ -147,6 +172,9 @@ class HiddenOption[J: JSON](ValueOption[J]):
         init=False,
     )
 
+    def _from_json(self, value: JSON) -> None:
+        self.value = cast(J, value)
+
     def save(self) -> None:
         """Saves the settings of the mod this option is associated with."""
         if self.mod is None:
@@ -186,6 +214,17 @@ class SliderOption(ValueOption[float]):
     step: float = 1
     is_integer: bool = True
 
+    def _from_json(self, value: JSON) -> None:
+        try:
+            self.value = float(value)  # type: ignore
+            if self.is_integer:
+                self.value = round(self.value)
+        except ValueError:
+            logging.error(
+                f"'{value}' is not a valid value for option '{self.identifier}', sticking"
+                f" with the default",
+            )
+
 
 @dataclass
 class SpinnerOption(ValueOption[str]):
@@ -214,6 +253,16 @@ class SpinnerOption(ValueOption[str]):
     choices: list[str]
     wrap_enabled: bool = False
 
+    def _from_json(self, value: JSON) -> None:
+        value = str(value)
+        if value in self.choices:
+            self.value = value
+        else:
+            logging.error(
+                f"'{value}' is not a valid value for option '{self.identifier}', sticking"
+                f" with the default",
+            )
+
 
 @dataclass
 class BoolOption(ValueOption[bool]):
@@ -239,6 +288,13 @@ class BoolOption(ValueOption[bool]):
 
     true_text: str | None = None
     false_text: str | None = None
+
+    def _from_json(self, value: JSON) -> None:
+        # Special case a false string
+        if isinstance(value, str) and value.strip().lower() == "false":
+            value = False
+
+        self.value = bool(value)
 
 
 @dataclass
@@ -266,6 +322,16 @@ class DropdownOption(ValueOption[str]):
 
     choices: list[str]
 
+    def _from_json(self, value: JSON) -> None:
+        value = str(value)
+        if value in self.choices:
+            self.value = value
+        else:
+            logging.error(
+                f"'{value}' is not a valid value for option '{self.identifier}', sticking"
+                f" with the default",
+            )
+
 
 @dataclass
 class ButtonOption(BaseOption):
@@ -290,6 +356,12 @@ class ButtonOption(BaseOption):
 
     _: KW_ONLY
     on_press: Callable[[Self], None] | None = None
+
+    def _to_json(self) -> EllipsisType:
+        return ...
+
+    def _from_json(self, value: JSON) -> None:
+        pass
 
     def __call__(self, on_press: Callable[[Self], None]) -> Self:
         """
@@ -338,6 +410,12 @@ class KeybindOption(ValueOption[str | None]):
     """
 
     is_rebindable: bool = True
+
+    def _from_json(self, value: JSON) -> None:
+        if value is None:
+            self.value = None
+        else:
+            self.value = str(value)
 
     @classmethod
     def from_keybind(cls, bind: KeybindType) -> Self:
@@ -388,6 +466,25 @@ class GroupedOption(BaseOption):
 
     children: Sequence[BaseOption]
 
+    def _to_json(self) -> JSON:
+        return {
+            option.identifier: child_json
+            for option in self.children
+            if (child_json := option._to_json()) is not ...
+        }
+
+    def _from_json(self, value: JSON) -> None:
+        if isinstance(value, Mapping):
+            for option in self.children:
+                if option.identifier not in value:
+                    continue
+                option._from_json(value[option.identifier])
+        else:
+            logging.error(
+                f"'{value}' is not a valid value for option '{self.identifier}', sticking"
+                f" with the default",
+            )
+
 
 @dataclass
 class NestedOption(BaseOption):
@@ -411,3 +508,22 @@ class NestedOption(BaseOption):
     """
 
     children: Sequence[BaseOption]
+
+    def _to_json(self) -> JSON:
+        return {
+            option.identifier: child_json
+            for option in self.children
+            if (child_json := option._to_json()) is not ...
+        }
+
+    def _from_json(self, value: JSON) -> None:
+        if isinstance(value, Mapping):
+            for option in self.children:
+                if option.identifier not in value:
+                    continue
+                option._from_json(value[option.identifier])
+        else:
+            logging.error(
+                f"'{value}' is not a valid value for option '{self.identifier}', sticking"
+                f" with the default",
+            )

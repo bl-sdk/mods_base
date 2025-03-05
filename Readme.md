@@ -19,6 +19,10 @@ game specific things:
 
 # Changelog
 
+### v1.9
+- Added `_(to|from)_json()` methods to all options.
+- Changed settings saving and loading to use above methods.
+
 ### v1.8
 - Fixed that nested and grouped options' children would not get their `.mod` attribute set.
 
