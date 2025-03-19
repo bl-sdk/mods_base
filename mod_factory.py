@@ -20,9 +20,9 @@ from .options import BaseOption, GroupedOption, NestedOption
 from .settings import SETTINGS_DIR
 
 
-def build_mod(
+def build_mod[T: Mod = Mod](
     *,
-    cls: type[Mod] = Mod,
+    cls: type[T] = Mod,
     deregister_same_settings: bool = True,
     inject_version_from_pyproject: bool = True,
     version_info_parser: Callable[[str], tuple[int, ...]] = (
@@ -43,7 +43,7 @@ def build_mod(
     auto_enable: bool | None = None,
     on_enable: Callable[[], None] | None = None,
     on_disable: Callable[[], None] | None = None,
-) -> Mod:
+) -> T:
     """
     Factory function to create and register a mod.
 
