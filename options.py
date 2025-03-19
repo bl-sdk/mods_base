@@ -195,7 +195,8 @@ class SliderOption(ValueOption[float]):
         value: The option's value.
         min_value: The minimum value.
         max_value: The maximum value.
-        step: How much the value should move each step of the slider.
+        step: How much the value should move each step of the slider. This does not mean your value
+              will always be a multiple of the step, it may be possible to get intermediate values.
         is_integer: If True, the value is treated as an integer.
     Keyword Args:
         display_name: The option name to use for display. Defaults to copying the identifier.
@@ -213,6 +214,14 @@ class SliderOption(ValueOption[float]):
     max_value: float
     step: float = 1
     is_integer: bool = True
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+
+        # This is generally non-sensical, and we expect most menus will have problems with it
+        # While you can easily get around it, block it as a first layer of defence
+        if self.step > (self.max_value - self.min_value):
+            raise ValueError("Can't give slider option a step larger than its allowed range")
 
     def _from_json(self, value: JSON) -> None:
         try:
