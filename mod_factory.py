@@ -73,13 +73,16 @@ def build_mod(
 
     ^1: Multiple authors are joined into a single string using commas + spaces.
     ^2: A string of one of the ModType enum value's name. Case sensitive.
+        Note this only influences ordering in the mod menu. Setting 'mod_type = "Library"' is *not*
+        equivalent to specifying cls=Library when calling this function.
     ^3: A list of strings of Game enum values' names. Case sensitive.
     ^4: A string of one of the CoopSupport enum value's name. Case sensitive.
     ^5: GroupedOption and NestedOption instances are deliberately ignored, to avoid possible issues
         gathering their child options twice. They must be explicitly passed via the arg.
 
-    Missing fields are not passed on to the mod constructor - e.g. by never specifying supported
-    games, they won't be passed on and it will use the default, all of them.
+    Any given fields are passed directly to the mod class constructor - and any missing ones are
+    not. This means not specifying a field is equivalent to the class default - for example, usually
+    mod type defaults to Standard, but when using 'cls=Library' it will default to Library.
 
     Extra Args:
         cls: The mod class to construct using. Can be used to select a subclass.
