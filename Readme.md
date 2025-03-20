@@ -20,7 +20,15 @@ game specific things:
 # Changelog
 
 ### v1.9
+- Added a new `CoopSupport.HostOnly` value.
+
+- Specifying a custom class when calling `build_mod` now type hints returning an instance of it,
+  instead of just `Mod`.
+
+- `SliderOption`s now throw if initialized with a step larger than their allowed range.
+
 - Added `_(to|from)_json()` methods to all options.
+
 - Changed settings saving and loading to use above methods.
 
 ### v1.8
