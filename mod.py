@@ -106,6 +106,7 @@ class CoopSupport(Enum):
     Incompatible = auto()
     RequiresAllPlayers = auto()
     ClientSide = auto()
+    HostOnly = auto()
 
 
 @dataclass
