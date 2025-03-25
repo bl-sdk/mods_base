@@ -31,7 +31,7 @@ from .command import (
 from .hook import HookType, bind_all_hooks, hook
 from .html_to_plain_text import html_to_plain_text
 from .keybinds import EInputEvent, KeybindType, keybind
-from .mod import CoopSupport, Game, Library, Mod, ModType
+from .mod import CoopSupport, Game, Library, Mod, ModType, RestartToDisable
 from .mod_factory import build_mod
 from .mod_list import (
     deregister_mod,
@@ -77,6 +77,7 @@ __all__: tuple[str, ...] = (
     "Mod",
     "ModType",
     "NestedOption",
+    "RestartToDisable",
     "SliderOption",
     "SpinnerOption",
     "ValueOption",
