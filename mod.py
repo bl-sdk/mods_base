@@ -334,3 +334,30 @@ class Library(Mod):
         if Game.get_current() not in self.supported_games:
             return "<font color='#ffff00'>Incompatible</font>"
         return "<font color='#00ff00'>Loaded</font>"
+
+
+@dataclass
+class RestartToDisable(Mod):
+    """
+    Helper subclass for mods which cannot be fully disabled without restarting the game.
+
+    Mods will still run the normal enable/disable logic. However, after being disabled, the status
+    will show that the mod requires a restart.
+    """
+
+    _ever_enabled: bool = field(default=False, init=False, repr=False)
+
+    def enable(self) -> None:
+        """Called to enable the mod."""
+        super().enable()
+
+        # In case we weren't allowed to enable
+        if self.is_enabled:
+            self._ever_enabled = True
+
+    def get_status(self) -> str:
+        """Gets the current status of this mod."""
+        if self._ever_enabled and not self.is_enabled:
+            return "<font color='#ff6060'>Disabling on Restart</font>"
+
+        return super().get_status()
