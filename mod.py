@@ -204,7 +204,7 @@ class Mod:
                     case BaseOption() if find_options:
                         new_options.append(value)
                     case HookType() if find_hooks:
-                        bound_hook: HookType = value.bind(self)
+                        bound_hook: HookType = value.bind(self)  # pyright: ignore[reportUnknownVariableType]
                         new_hooks.append(bound_hook)
                         setattr(self, name, bound_hook)
                     case AbstractCommand() if find_commands:

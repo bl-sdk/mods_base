@@ -145,7 +145,7 @@ class BaseMod(Library):
         version: str
 
     # They should also all add themselves here, so we can record their versions
-    components: list[ComponentInfo] = field(default_factory=list)
+    components: list[ComponentInfo] = field(default_factory=list[ComponentInfo])
 
     # Base mod options
     get_latest_release_button: ButtonOption = field(init=False)
