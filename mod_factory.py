@@ -329,7 +329,7 @@ def update_fields_with_module_search(  # noqa: C901 - difficult to split up
                 new_options.append(value)
 
             case HookType() if find_hooks:
-                hook: HookType = value
+                hook: HookType = value  # pyright: ignore[reportUnknownVariableType]
                 new_hooks.append(hook)
 
             case AbstractCommand() if find_commands:

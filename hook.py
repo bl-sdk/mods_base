@@ -27,7 +27,7 @@ class HookType[R: PreHookRet | PostHookRet = Any]:
     __wrapped__: Callable[[UObject, WrappedStruct, Any, BoundFunction], R]
 
     hook_identifier: str
-    hook_funcs: list[tuple[str, Type]] = field(default_factory=list)
+    hook_funcs: list[tuple[str, Type]] = field(default_factory=list[tuple[str, Type]])
 
     def enable(self) -> None:
         """Enables all hooks this function is bound to."""
@@ -209,7 +209,7 @@ def hook[R: (PreHookRet, PostHookRet)](  # noqa: D417 - deprecated arg
         hook: HookType[R]
         if isinstance(func, HookType):
             # If we're directly wrapping another hook, use it
-            hook = func
+            hook = func  # pyright: ignore[reportUnknownVariableType]
         else:
             # Look to see if we wrapped another hook function inbetween somewhere
             wrapped_func = func

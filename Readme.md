@@ -19,6 +19,9 @@ game specific things:
 
 # Changelog
 
+### v1.10
+- Linting fixups.
+
 ### v1.9
 - Added a new `CoopSupport.HostOnly` value.
 

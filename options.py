@@ -165,7 +165,7 @@ class HiddenOption[J: JSON](ValueOption[J]):
     """
 
     # Need to redefine on change so that it binds to J@HiddenOption, not J@ValueOption
-    on_change: Callable[[Self, J], None] | None = None
+    on_change: Callable[[Self, J], None] | None = None  # pyright: ignore[reportIncompatibleVariableOverride]
 
     is_hidden: Literal[True] = field(  # pyright: ignore[reportIncompatibleVariableOverride]
         default=True,
