@@ -20,7 +20,7 @@ game specific things:
 # Changelog
 
 ### v1.10
-- Linting fixups.
+- Moved a few warnings to go through Python's system, so they get attributed to the right place.
 
 ### v1.9
 - Added a new `CoopSupport.HostOnly` value.

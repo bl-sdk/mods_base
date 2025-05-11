@@ -3,12 +3,11 @@ import functools
 import inspect
 import operator
 import tomllib
+import warnings
 from collections.abc import Callable, Sequence
 from pathlib import Path
 from types import ModuleType
 from typing import Any, TypedDict
-
-from unrealsdk import logging
 
 from .command import AbstractCommand
 from .dot_sdkmod import open_in_mod_dir
@@ -18,6 +17,8 @@ from .mod import CoopSupport, Game, Mod, ModType
 from .mod_list import deregister_mod, mod_list, register_mod
 from .options import BaseOption, GroupedOption, NestedOption
 from .settings import SETTINGS_DIR
+
+_WARNING_SKIPS: tuple[str] = (str(Path(__file__).parent),)
 
 
 def build_mod[T: Mod = Mod](
@@ -321,9 +322,11 @@ def update_fields_with_module_search(  # noqa: C901 - difficult to split up
                 new_keybinds.append(value)
 
             case GroupedOption() | NestedOption() if find_options:
-                logging.dev_warning(
+                warnings.warn(
                     f"{module.__name__}: {type(value).__name__} instances must be explicitly"
                     f" specified in the options list!",
+                    stacklevel=2,
+                    skip_file_prefixes=_WARNING_SKIPS,
                 )
             case BaseOption() if find_options:
                 new_options.append(value)

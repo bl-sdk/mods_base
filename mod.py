@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import inspect
 import sys
+import warnings
 from dataclasses import dataclass, field
 from enum import Enum, Flag, auto
 from functools import cache
@@ -18,6 +19,8 @@ from .settings import default_load_mod_settings, default_save_mod_settings
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator, Sequence
+
+_WARNING_SKIPS: tuple[str] = (str(Path(__file__).parent),)
 
 
 class Game(Flag):
@@ -197,9 +200,11 @@ class Mod:
                     case KeybindType() if find_keybinds:
                         new_keybinds.append(value)
                     case GroupedOption() | NestedOption() if find_options:
-                        logging.dev_warning(
+                        warnings.warn(
                             f"{self.name}: {type(value).__name__} instances must be explicitly"
                             f" specified in the options list!",
+                            stacklevel=2,
+                            skip_file_prefixes=_WARNING_SKIPS,
                         )
                     case BaseOption() if find_options:
                         new_options.append(value)
