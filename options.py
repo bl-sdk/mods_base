@@ -1,3 +1,4 @@
+import warnings
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import KW_ONLY, dataclass, field
@@ -136,9 +137,10 @@ class ValueOption[J: JSON](BaseOption):
             This option instance.
         """
         if self.on_change is not None:
-            logging.dev_warning(
+            warnings.warn(
                 f"{self.__class__.__qualname__}.__call__ was called on an option which already has"
                 f" a on change callback.",
+                stacklevel=2,
             )
 
         self.on_change = on_change
@@ -385,9 +387,10 @@ class ButtonOption(BaseOption):
             This option instance.
         """
         if self.on_press is not None:
-            logging.dev_warning(
+            warnings.warn(
                 f"{self.__class__.__qualname__}.__call__ was called on an option which already has"
                 f" a on press callback.",
+                stacklevel=2,
             )
 
         self.on_press = on_press
