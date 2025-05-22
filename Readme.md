@@ -22,6 +22,8 @@ game specific things:
 ### v1.10
 - Moved a few warnings to go through Python's system, so they get attributed to the right place.
 
+- Added support for BL1.
+
 ### v1.9
 - Added a new `CoopSupport.HostOnly` value.
 

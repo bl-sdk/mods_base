@@ -26,25 +26,30 @@ _WARNING_SKIPS: tuple[str] = (str(Path(__file__).parent),)
 class Game(Flag):
     """A flags enum of the supported games."""
 
+    BL1 = auto()
     BL2 = auto()
     TPS = auto()
     AoDK = auto()
     BL3 = auto()
     WL = auto()
 
+    Willow1 = BL1
     Willow2 = BL2 | TPS | AoDK
     Oak = BL3 | WL
 
     @staticmethod
     @cache
-    def get_current() -> Literal[Game.BL2, Game.TPS, Game.AoDK, Game.BL3, Game.WL]:
+    def get_current() -> Literal[Game.BL1, Game.BL2, Game.TPS, Game.AoDK, Game.BL3, Game.WL]:
         """Gets the current game."""
 
         # As a bit of safety, we can use the architecture to limit which games are allowed
         is_64bits = sys.maxsize > 2**32
 
-        lower_exe_names: dict[str, Literal[Game.BL2, Game.TPS, Game.AoDK, Game.BL3, Game.WL]]
-        default_game: Literal[Game.BL2, Game.TPS, Game.AoDK, Game.BL3, Game.WL]
+        lower_exe_names: dict[
+            str,
+            Literal[Game.BL1, Game.BL2, Game.TPS, Game.AoDK, Game.BL3, Game.WL],
+        ]
+        default_game: Literal[Game.BL1, Game.BL2, Game.TPS, Game.AoDK, Game.BL3, Game.WL]
         if is_64bits:
             lower_exe_names = {
                 "borderlands3.exe": Game.BL3,
@@ -53,6 +58,7 @@ class Game(Flag):
             default_game = Game.BL3
         else:
             lower_exe_names = {
+                "borderlands.exe": Game.BL1,
                 "borderlands2.exe": Game.BL2,
                 "borderlandspresequel.exe": Game.TPS,
                 "tinytina.exe": Game.AoDK,
@@ -72,7 +78,7 @@ class Game(Flag):
 
     @staticmethod
     @cache
-    def get_tree() -> Literal[Game.Willow2, Game.Oak]:
+    def get_tree() -> Literal[Game.Willow1, Game.Willow2, Game.Oak]:
         """
         Gets the "tree" the game we're currently running belongs to.
 
@@ -84,6 +90,8 @@ class Game(Flag):
             The current game's tree.
         """
         match Game.get_current():
+            case Game.BL1:
+                return Game.Willow1
             case Game.BL2 | Game.TPS | Game.AoDK:
                 return Game.Willow2
             case Game.BL3 | Game.WL:
