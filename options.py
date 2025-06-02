@@ -225,6 +225,17 @@ class SliderOption(ValueOption[float]):
         if self.step > (self.max_value - self.min_value):
             raise ValueError("Can't give slider option a step larger than its allowed range")
 
+        # This isn't as serious, but still show a warning
+        if self.is_integer and any(
+            x != int(x) for x in (self.value, self.min_value, self.max_value, self.step)
+        ):
+            warnings.warn(
+                "Spinner has non-integer fields despite is_integer being True. This may cause"
+                " unexpected rounding.",
+                # +1 to skip the generated dataclass `__init__` too
+                stacklevel=3,
+            )
+
     def _from_json(self, value: JSON) -> None:
         try:
             self.value = float(value)  # type: ignore
