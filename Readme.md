@@ -20,6 +20,8 @@ game specific things:
 # Changelog
 
 ### v1.10
+- Added the `ObjectFlags` enum, holding a few known useful flags.
+
 - Moved a few warnings to go through Python's system, so they get attributed to the right place.
 
 - Added a warning for initializing a non-integer slider option with `is_integer=True` (the default).
