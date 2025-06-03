@@ -1,6 +1,7 @@
+from enum import IntFlag, auto
 from functools import wraps
 from pathlib import Path
-from typing import Literal, overload
+from typing import TYPE_CHECKING, Literal, overload
 
 import unrealsdk
 from unrealsdk.unreal import UObject
@@ -126,6 +127,21 @@ def get_pc(*, possibly_loading: bool = False) -> UObject | None:
     raise NotImplementedError
 
 
+class ObjectFlags(IntFlag):
+    """
+    Useful values to assign to object flags, both for directly on an object and in construct_object.
+
+    Note that not all flags are known in all games - though the type hinting always contains them
+    all. Trying to use a flag in a game where it's not known will throw an attribute error.
+    """
+
+    if TYPE_CHECKING:
+        # Prevents the object from getting garbage collected
+        KEEP_ALIVE = auto()
+        # Allows the object to be referenced by objects in other packages
+        ALLOW_CROSS_PACKAGE_REFERENCES = auto()
+
+
 match Game.get_tree():
     case Game.Willow1 | Game.Willow2:
         ENGINE = unrealsdk.find_object(  # pyright: ignore[reportConstantRedefinition]
@@ -141,6 +157,13 @@ match Game.get_tree():
             return ENGINE._get_field(_GAME_PLAYERS_PROP)[0]._get_field(_ACTOR_PROP)
 
         get_pc = get_pc_willow  # type: ignore
+
+        @wraps(ObjectFlags, updated=())
+        class WillowObjectFlags(ObjectFlags):  # type: ignore
+            ALLOW_CROSS_PACKAGE_REFERENCES = 0x4
+            KEEP_ALIVE = 0x4000
+
+        ObjectFlags = WillowObjectFlags  # type: ignore
 
     case Game.Oak:
         ENGINE = unrealsdk.find_object(  # pyright: ignore[reportConstantRedefinition]
@@ -163,3 +186,9 @@ match Game.get_tree():
             )
 
         get_pc = get_pc_oak  # type: ignore
+
+        @wraps(ObjectFlags, updated=())
+        class OakObjectFlags(ObjectFlags):  # type: ignore
+            KEEP_ALIVE = 0x80
+
+        ObjectFlags = OakObjectFlags  # type: ignore
