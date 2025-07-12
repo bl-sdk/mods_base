@@ -19,6 +19,10 @@ game specific things:
 
 # Changelog
 
+### v1.11 (Upcoming)
+- Added extra typing overloads to the `keybind` factory, to allow cases such as
+  `keybind("name", callback=func)`
+
 ### v1.10
 - Added the `ObjectFlags` enum, holding a few known useful flags.
 
