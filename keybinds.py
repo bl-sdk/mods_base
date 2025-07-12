@@ -147,6 +147,21 @@ def keybind(
 def keybind(
     identifier: str,
     key: str | None = None,
+    *,
+    callback: KeybindCallback_NoArgs,
+    display_name: str | None = None,
+    description: str = "",
+    description_title: str | None = None,
+    is_hidden: bool = False,
+    is_rebindable: bool = True,
+    event_filter: EInputEvent = EInputEvent.IE_Pressed,
+) -> KeybindType: ...
+
+
+@overload
+def keybind(
+    identifier: str,
+    key: str | None = None,
     callback: None = None,
     *,
     display_name: str | None = None,
@@ -164,6 +179,21 @@ def keybind(
     key: str | None,
     callback: KeybindCallback_Event,
     *,
+    display_name: str | None = None,
+    description: str = "",
+    description_title: str | None = None,
+    is_hidden: bool = False,
+    is_rebindable: bool = True,
+    event_filter: None,
+) -> KeybindType: ...
+
+
+@overload
+def keybind(
+    identifier: str,
+    key: str | None = None,
+    *,
+    callback: KeybindCallback_Event,
     display_name: str | None = None,
     description: str = "",
     description_title: str | None = None,
