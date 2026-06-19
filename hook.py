@@ -1,7 +1,8 @@
 import functools
 import inspect
 import warnings
-from collections.abc import Callable
+from collections.abc import Callable, Generator
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from typing import Any, Literal, Self, cast, overload
 
@@ -41,6 +42,19 @@ class HookType[R: PreHookRet | PostHookRet = Any]:
         """Disables all hooks this function is bound to."""
         for hook_func, hook_type in self.hook_funcs:
             remove_hook(hook_func, hook_type, self.hook_identifier)
+
+    @contextmanager
+    def pause(self) -> Generator[None]:
+        """
+        Context manager which disables this hook for its duration.
+
+        Note this does *not* handle the case where the hook was already disabled beforehand.
+        """
+        self.disable()
+        try:
+            yield
+        finally:
+            self.enable()
 
     def get_active_count(self) -> int:
         """
