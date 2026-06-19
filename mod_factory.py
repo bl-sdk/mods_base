@@ -213,7 +213,7 @@ def update_fields_with_pyproject_tool_sdkmod(
     if fields["supported_games"] is None and "supported_games" in sdkmod:
         valid_games = [Game[name] for name in sdkmod["supported_games"] if name in Game.__members__]
         if valid_games:
-            fields["supported_games"] = functools.reduce(operator.or_, valid_games)
+            fields["supported_games"] = functools.reduce(operator.or_, valid_games)  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType]
 
     if fields["coop_support"] is None and "coop_support" in sdkmod:
         fields["coop_support"] = CoopSupport.__members__.get(sdkmod["coop_support"])

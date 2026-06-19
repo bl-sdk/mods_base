@@ -7,7 +7,7 @@ from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import IO, TYPE_CHECKING, Literal, overload
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Generator
 
 
 @overload
@@ -25,7 +25,7 @@ def open_in_mod_dir(path: Path, binary: Literal[True]) -> AbstractContextManager
 def open_in_mod_dir(
     path: Path,
     binary: bool = False,
-) -> Iterator[IO[str]] | Iterator[IO[bytes]]:
+) -> Generator[IO[str]] | Generator[IO[bytes]]:
     """
     Opens a file in a mod folder for reading, handling possibly being inside a .sdkmod.
 
