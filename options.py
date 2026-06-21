@@ -155,103 +155,79 @@ class ValueOption[J: JSON](BaseOption):
         super().__setattr__(name, value)
 
     @overload
-    def set_on_change_anytime(
+    def set_on_change(
         self,
         /,
+        *,
+        anytime: bool = False,
+        while_enabled: bool = True,
     ) -> Callable[[Callable[[Self, J], None]], Self]: ...
 
     @overload
-    def set_on_change_anytime(
+    def set_on_change(
         self,
         on_change_anytime: Callable[[Self, J], None],
         /,
+        *,
+        anytime: bool = False,
+        while_enabled: bool = True,
     ) -> Self: ...
 
-    def set_on_change_anytime(
+    def set_on_change(
         self,
-        on_change_anytime: Callable[[Self, J], None] | None = None,
+        on_change: Callable[[Self, J], None] | None = None,
         /,
+        *,
+        anytime: bool = False,
+        while_enabled: bool = True,
     ) -> Self | Callable[[Callable[[Self, J], None]], Self]:
         """
-        Decorator factory to set the on_change_anytime callback.
+        Decorator factory to set the on_change callbacks.
 
         Note this is *not* a true decorator, it returns the option, so must be the outermost level.
 
         Args:
-            on_change_anytime: The callback to set.
+            on_change: The callback to set.
+            anytime: If True, sets the on_change_anytime callback.
+            while_enabled: If True, sets the on_change_while_enabled callback.
         Returns:
             This option instance.
         """
 
-        def decorator(on_change_anytime: Callable[[Self, J], None] | None) -> Self:
-            if self.on_change_anytime is not None:
-                warnings.warn(
-                    f"{self.__class__.__qualname__}.set_on_change_anytime was called on an option"
-                    f" which already has an on_change_anytime callback.",
-                    # The stack depth is inconsistent depending on if we were called directly or not
-                    skip_file_prefixes=(str(Path(__file__).parent),),
-                )
+        def decorator(on_change: Callable[[Self, J], None] | None) -> Self:
+            attrs: list[str] = []
+            if anytime:
+                attrs.append("on_change_anytime")
+            if while_enabled:
+                attrs.append("on_change_while_enabled")
 
-            self.on_change_anytime = on_change_anytime
+            if not attrs:
+                raise ValueError("One of anytime or while_enabled must be True")
+
+            for attr in attrs:
+                if getattr(self, attr) is not None:
+                    warnings.warn(
+                        f"{self.__class__.__qualname__}.set_on_change was called on an option which"
+                        f" already has an {attr} callback.",
+                        # Stack depth is inconsistent depending on if we were called directly or not
+                        skip_file_prefixes=(str(Path(__file__).parent),),
+                    )
+
+                setattr(self, attr, on_change)
             return self
 
-        if on_change_anytime is None:
+        if on_change is None:
             return decorator
-        return decorator(on_change_anytime)
-
-    @overload
-    def set_on_change_while_enabled(
-        self,
-        /,
-    ) -> Callable[[Callable[[Self, J], None]], Self]: ...
-
-    @overload
-    def set_on_change_while_enabled(
-        self,
-        on_change_anytime: Callable[[Self, J], None],
-        /,
-    ) -> Self: ...
-
-    def set_on_change_while_enabled(
-        self,
-        on_change_while_enabled: Callable[[Self, J], None] | None = None,
-        /,
-    ) -> Self | Callable[[Callable[[Self, J], None]], Self]:
-        """
-        Decorator factory to set the set_on_change_while_enabled callback.
-
-        Note this is *not* a true decorator, it returns the option, so must be the outermost level.
-
-        Args:
-            on_change_while_enabled: The callback to set.
-        Returns:
-            This option instance.
-        """
-
-        def decorator(on_change_while_enabled: Callable[[Self, J], None] | None) -> Self:
-            if self.on_change_while_enabled is not None:
-                warnings.warn(
-                    f"{self.__class__.__qualname__}.set_on_change_while_enabled was called on an"
-                    f" option which already has an on_change_while_enabled callback.",
-                    skip_file_prefixes=(str(Path(__file__).parent),),
-                )
-
-            self.on_change_while_enabled = on_change_while_enabled
-            return self
-
-        if on_change_while_enabled is None:
-            return decorator
-        return decorator(on_change_while_enabled)
+        return decorator(on_change)
 
     if TYPE_CHECKING:
         _Deprecated = NewType("_Deprecated", None)
 
     @warnings.deprecated(
-        "Setting the on-change callback via __call__ is deprecated, use set_on_change_anytime or"
-        " set_on_change_while_enabled instead.",
+        "Setting the on-change callback via __call__ is deprecated, use set_on_change instead",
     )
     def __call__(self, on_change: _Deprecated) -> Self:  # noqa: D102
-        return self.set_on_change_anytime(on_change)  # type: ignore
+        return self.set_on_change(on_change, anytime=True, while_enabled=False)  # type: ignore
 
     @property
     @warnings.deprecated(
