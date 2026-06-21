@@ -19,6 +19,13 @@ game specific things:
 
 # Changelog
 
+### v1.12
+- Deprecated `ValueOption.on_change`, as well as setting it via `__call__`, in favour of separate,
+  more explicit, `on_change_anytime` and `on_change_while_enabled` callbacks.
+
+- Added a `HookType.pause()` context manager. This may sometimes be preferable over the
+  `unrealsdk.hooks.prevent_hooking_direct_calls()` context manager.
+
 ### v1.11
 - Added extra typing overloads to the `keybind` factory, to allow cases such as
   `keybind("name", callback=func)`
