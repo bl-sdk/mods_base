@@ -95,7 +95,6 @@ class ValueOption[J: JSON](BaseOption):
                            reference to the option object and the new value.
         on_change_while_enabled: As above, but only called when this option has an associated mod
                                  object, if that mod is enabled.
-        remap_value: Converts the value when displayed in options.
     Extra Attributes:
         mod: The mod this option stores it's settings in, or None if not (yet) associated with one.
         default_value: What the value was originally when registered. Does not update on change.
@@ -106,7 +105,6 @@ class ValueOption[J: JSON](BaseOption):
     _: KW_ONLY
     on_change_anytime: Callable[[Self, J], None] | None = None
     on_change_while_enabled: Callable[[Self, J], None] | None = None
-    remap_value: Callable[[Self, J], J] = lambda _, v: v
 
     @abstractmethod
     def __init__(self) -> None:
