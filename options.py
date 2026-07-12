@@ -314,6 +314,7 @@ class SliderOption(ValueOption[float]):
                            reference to the option object and the new value.
         on_change_while_enabled: As above, but only called when this option has an associated mod
                                  object, if that mod is enabled.
+        remap_values: To be used in mod menu options when displaying slider values.
     Extra Attributes:
         mod: The mod this option stores it's settings in, or None if not (yet) associated with one.
         default_value: What the value was originally when registered. Does not update on change.
@@ -323,6 +324,9 @@ class SliderOption(ValueOption[float]):
     max_value: float
     step: float = 1
     is_integer: bool = True
+    _: KW_ONLY
+    remap_values_to_display: Callable[[Self, float], float] = None
+    remap_values_to_internal: Callable[[Self, float], float] = None
 
     def __post_init__(self) -> None:
         super().__post_init__()
@@ -342,6 +346,21 @@ class SliderOption(ValueOption[float]):
                 # +1 to skip the generated dataclass `__init__` too
                 stacklevel=3,
             )
+
+        if not (
+            (self.remap_values_to_display and self.remap_values_to_internal)
+            or (not self.remap_values_to_display and not self.remap_values_to_internal)
+        ):
+            raise AttributeError(
+                "Cannot set only remap_values_to_display or remap_values_to_internal."
+                " Both must be set to handle values in and out.",
+            )
+
+        if self.remap_values_to_display is None:
+            self.remap_values_to_display = lambda _, v: v
+
+        if self.remap_values_to_internal is None:
+            self.remap_values_to_internal = lambda _, v: v
 
     def _from_json(self, value: JSON) -> None:
         try:
