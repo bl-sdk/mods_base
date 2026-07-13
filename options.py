@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import warnings
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Mapping, Sequence
-from dataclasses import KW_ONLY, dataclass, field
+from collections.abc import Callable, Iterator, Mapping, Sequence
+from contextlib import contextmanager
+from dataclasses import KW_ONLY, InitVar, dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, NewType, Self, cast, overload
 
@@ -314,21 +315,33 @@ class SliderOption(ValueOption[float]):
                            reference to the option object and the new value.
         on_change_while_enabled: As above, but only called when this option has an associated mod
                                  object, if that mod is enabled.
-        remap_values: To be used in mod menu options when displaying slider values.
+        remap_values_to_display: To be used in mod menu options when displaying slider values.
+                                 Must be set with remap_values_to_internal.
+        remap_values_to_internal: To be used in mod menu options when setting slider values.
+                                  Must be set with remap_values_to_display.
     Extra Attributes:
         mod: The mod this option stores it's settings in, or None if not (yet) associated with one.
         default_value: What the value was originally when registered. Does not update on change.
     """
+
+    _remap_values_to_display: Callable[[Self, float], float] = field(init=False)
+    _remap_values_to_internal: Callable[[Self, float], float] = field(init=False)
+    _remapping_enabled: bool = field(init=False, default=False)
 
     min_value: float
     max_value: float
     step: float = 1
     is_integer: bool = True
     _: KW_ONLY
-    remap_values_to_display: Callable[[Self, float], float] = None
-    remap_values_to_internal: Callable[[Self, float], float] = None
 
-    def __post_init__(self) -> None:
+    remap_values_to_display: InitVar[Callable[[Self, float], float] | None] = None
+    remap_values_to_internal: InitVar[Callable[[Self, float], float] | None] = None
+
+    def __post_init__(
+        self,
+        remap_values_to_display: Callable[[Self, float], float] | None,
+        remap_values_to_internal: Callable[[Self, float], float] | None,
+    ) -> None:
         super().__post_init__()
 
         # This is generally non-sensical, and we expect most menus will have problems with it
@@ -347,20 +360,25 @@ class SliderOption(ValueOption[float]):
                 stacklevel=3,
             )
 
+        # Check if theyre not both none or both not none
         if not (
-            (self.remap_values_to_display and self.remap_values_to_internal)
-            or (not self.remap_values_to_display and not self.remap_values_to_internal)
+            (remap_values_to_display and remap_values_to_internal)
+            or (not remap_values_to_display and not remap_values_to_internal)
         ):
             raise AttributeError(
                 "Cannot set only remap_values_to_display or remap_values_to_internal."
                 " Both must be set to handle values in and out.",
             )
 
-        if self.remap_values_to_display is None:
-            self.remap_values_to_display = lambda _, v: v
-
-        if self.remap_values_to_internal is None:
-            self.remap_values_to_internal = lambda _, v: v
+        # Set a default to just return the value as is.
+        # Checking both is redundant because of the previous check,
+        # But it makes the type checker know theyre both not None in the else
+        if remap_values_to_display is None or remap_values_to_internal is None:
+            self._remap_values_to_display = lambda _, v: v
+            self._remap_values_to_internal = lambda _, v: v
+        else:
+            self._remap_values_to_display = remap_values_to_display
+            self._remap_values_to_internal = remap_values_to_internal
 
     def _from_json(self, value: JSON) -> None:
         try:
@@ -372,6 +390,25 @@ class SliderOption(ValueOption[float]):
                 f"'{value}' is not a valid value for option '{self.identifier}', sticking"
                 f" with the default",
             )
+
+    def __setattr__(self, name: str, value: Any) -> None:
+        if self._remapping_enabled and name in ["value", "min_value", "max_value", "step"]:
+            value = self._remap_values_to_internal(self, value)
+        super().__setattr__(name, value)
+
+    def __getattribute__(self, name: str) -> Any:
+        if self._remapping_enabled and name in ["value", "min_value", "max_value", "step"]:
+            return self._remap_values_to_display(self, super().__getattribute__(name))
+        return super().__getattribute__(name)
+
+    @contextmanager
+    def enable_remapping(self) -> Iterator[None]:
+        """Context manager to enable remapping when getting and setting the option in a mod menu."""
+        self._remapping_enabled = True
+        try:
+            yield
+        finally:
+            self._remapping_enabled = False
 
 
 @dataclass
