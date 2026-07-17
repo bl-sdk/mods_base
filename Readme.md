@@ -19,6 +19,9 @@ game specific things:
 
 # Changelog
 
+### v1.13
+- Added `reset` method to `BaseOption`; implemented in `ValueOption`, `ButtonOption`, `GroupedOption` and `NestedOption`.
+
 ### v1.12
 - Deprecated `ValueOption.on_change`, as well as setting it via `__call__`, in favour of separate,
   more explicit, `on_change_anytime` and `on_change_while_enabled` callbacks.

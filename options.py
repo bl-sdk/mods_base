@@ -77,6 +77,11 @@ class BaseOption(ABC):
         if self.description_title is None:  # type: ignore
             self.description_title = self.display_name
 
+    @abstractmethod
+    def reset(self) -> None:
+        """Reset the option to it's default state."""
+        raise NotImplementedError
+
 
 @dataclass
 class ValueOption[J: JSON](BaseOption):
@@ -219,6 +224,10 @@ class ValueOption[J: JSON](BaseOption):
         if on_change is None:
             return decorator
         return decorator(on_change)
+
+    def reset(self) -> None:
+        """Reset the value to the default_value."""
+        self.value = self.default_value
 
     if TYPE_CHECKING:
         _Deprecated = NewType("_Deprecated", None)
@@ -520,6 +529,14 @@ class ButtonOption(BaseOption):
         self.on_press = on_press
         return self
 
+    def reset(self) -> None:
+        """
+        Does nothing as button options do not contain anything.
+
+        Exists to allow GroupedOption and NestedOption to call reset on all their children without
+        an error being thrown.
+        """
+
 
 @dataclass
 class KeybindOption(ValueOption[str | None]):
@@ -623,6 +640,11 @@ class GroupedOption(BaseOption):
                 f" with the default",
             )
 
+    def reset(self) -> None:
+        """Reset all children."""
+        for child in self.children:
+            child.reset()
+
 
 @dataclass
 class NestedOption(BaseOption):
@@ -665,3 +687,8 @@ class NestedOption(BaseOption):
                 f"'{value}' is not a valid value for option '{self.identifier}', sticking"
                 f" with the default",
             )
+
+    def reset(self) -> None:
+        """Reset all children."""
+        for child in self.children:
+            child.reset()
