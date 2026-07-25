@@ -25,7 +25,7 @@ else:
 
     EInputEvent = find_enum("EInputEvent")
 
-type KeybindBlockSignal = None | Block | type[Block]
+type KeybindBlockSignal = Block | type[Block] | None
 type KeybindCallback_Event = Callable[[EInputEvent], KeybindBlockSignal]
 type KeybindCallback_NoArgs = Callable[[], KeybindBlockSignal]
 

@@ -9,7 +9,7 @@ from typing import Any, Literal, Self, cast, overload
 from unrealsdk.hooks import Block, Type, add_hook, has_hook, remove_hook
 from unrealsdk.unreal import BoundFunction, UObject, WrappedStruct
 
-type HookBlockSignal = None | Block | type[Block]
+type HookBlockSignal = Block | type[Block] | None
 type PreHookRet = HookBlockSignal | tuple[HookBlockSignal, Any]
 type PostHookRet = None
 
